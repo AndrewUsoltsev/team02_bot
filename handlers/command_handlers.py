@@ -4,6 +4,10 @@ from telegram import Update,KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardB
 from telegram.ext import ContextTypes
 
 async def start_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # перенаправление ответа в Telegram
+    await update.message.reply_text(f"Приветствую,{' '.join([update['message']['chat']['last_name'],update['message']['chat']['first_name']])}!", parse_mode="Markdown")
+
+async def tech_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # объект обновления
     update_obj = json.dumps(update.to_dict(), indent=4)
 
