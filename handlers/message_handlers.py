@@ -1,10 +1,11 @@
 from telegram import Update
 from telegram import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InputMediaVideo
 from config.openai_client import client
 import re
 
 context_data = []
-len_context = 0
+len_context = 3
 #может стоит обнулять контекст, если меняется тематика?
 
 def get_answer(text, context="",t=0.5):
@@ -43,7 +44,7 @@ async def chatgpt_reply(update: Update, context):
     #print(text_with_context)
     #print('-------------')
     # перенаправление ответа в Telegram
-    mes = await update.message.reply_text("Ваш запрос обрабатывается, подождите...")
+    mes = await update.message.reply_text("Ваш запрос обрабатывается, пожалуйста, подождите...")
     # запрос
     #response = client.chat.completions.create(
     #    model="gpt-3.5-turbo",
@@ -59,17 +60,17 @@ async def chatgpt_reply(update: Update, context):
     #'model research':'Don\'t forget to talk about the following techniques: data visualization, validation, hyperparameter optimization, feature selection, ensemble collection.',\
     #'deploy model':'Don\'t forget to talk about the design as a service (streamlit),using docker, instructions',\
     #'others':'Add a sentence at the end saying that you\'re not sure the query was related to Data Science and if you\'re not satisfied with the answer, it might be worth rephrasing the question.'}
-    reply =  get_answer(text, context=text_with_context, t=0.3)
+    reply =  get_answer(text, context=text_with_context, t=0.2)
     
     if len_context==0:
         context_data=[]
     elif len(context_data)>=len_context:
         context_data.pop(0)
-        context_data.append(text)
+        context_data.append(text+' - '+reply)
     else:
-        context_data.append(text)
+        context_data.append(text+' - '+reply)
     # ответ
-    reply = response.choices[0].message.content.strip()
+    #reply = response.choices[0].message.content.strip()
 
     if "<pre" in reply or "<code>" in reply:
         keyboard = [[InlineKeyboardButton("Нажми меня", callback_data='press')]]
@@ -78,19 +79,23 @@ async def chatgpt_reply(update: Update, context):
     else:
         keyboard = [[InlineKeyboardButton("Нажми меня", callback_data='press')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await mes.edit_text(reply.strip(),reply_markup=reply_markup)    
-    
+        try:
+            await mes.edit_text(reply.strip(),parse_mode="Markdown",reply_markup=reply_markup)    
+        except:
+            await mes.edit_text(reply.strip(),reply_markup=reply_markup)
     #print("user:", text)
     #print("assistant:", reply)
 
 async def code_button(update: Update, context):
     query = update.callback_query
     await query.answer()
-    await query.edit_message_text(text="Здесь будет ответ по кнопке")
+    await query.edit_message_text(text="Здесь мог бы быть пример кода в контексте вопроса")
     #await query.edit_message_reply_markup(reply_markup=None)
     #print(f'The query is {query.data}')
     #if query.data=='press':
     #    await update.effective_chat.send_message("Вы нажали на кнопку!")
 
 async def other_reply(update: Update, context):
-    await update.message.reply_text("Вы прислали не текст. Пожалуйста, пришлите текстовый запрос")
+    video = InputMediaVideo(open('/root/bot/team02_bot/content/Huh Cat Meme Template.mp4', 'rb'), caption='Вы расстроили котика... Пришлите текст или голосовое, пожалуйста')
+    await update.message.reply_media_group([video])
+    #await update.message.reply_text("Вы прислали не текст. Пожалуйста, пришлите текстовый запрос")

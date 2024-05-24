@@ -5,7 +5,9 @@ from telegram.ext import ContextTypes
 
 async def start_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # перенаправление ответа в Telegram
-    await update.message.reply_text(f"Приветствую,{' '.join([update['message']['chat']['last_name'],update['message']['chat']['first_name']])}!", parse_mode="Markdown")
+    await update.message.reply_text(f"Приветствую,{' '.join([update['message']['chat']['last_name'],update['message']['chat']['first_name']])}!")
+    await update.message.reply_text(f"Я помогу тебе с различными вопросами, связанными с Data Science! Задай свой вопрос в текстовом или голосовом сообщении.")
+    await update.message.reply_text(f"И не вздумай прислать что-то в другом формате (actually попробуй хотя бы разок).")
 
 async def tech_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # объект обновления
