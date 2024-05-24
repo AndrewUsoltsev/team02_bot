@@ -7,6 +7,34 @@ context_data = []
 len_context = 0
 #может стоит обнулять контекст, если меняется тематика?
 
+def get_answer(text, context="",t=0.5):
+    system_prompts = [
+        "You are a very useful assistant for Data Scientist.",
+        "Ты очень педантично используешь термины и с досточно большой специфичностью выбираешь и используешь их. Расписываешь всё структурировано и по пунктам.\
+                      тебе могут задавать некорректные вопросы, связанные с несуществующими определениями, нужно их отклонять и предложить альтернативные темы. Желательно предоставлять примеры, где это возможно",
+        "Для всех методов крайне рекомендуется упоминать подводные камни по их использованию. А также необходимо писать и плюсы и минусы заданного подхода.",
+        "Если у данного метода есть альтернативы, нужно выписать их по пунктам и предоставить сравнение с ними. Рекомендуется взять 3 альтернативы, если они имеются.\
+        Крайне рекомендуется дополнительно описать специфичные альтернативы и в каких случаях можно их использовать.\
+        Все сравнения описывать по пунктам.\
+        Описать в чем превосходство текущего метода и в чем его недостатки в сравнении с другими методами.",
+        "When you provide code, you must use this format: <pre language=\"lang\">code</pre>, where code is the code itself and lang is a programming language name.\
+          Use the <code>variable</code> construction if you need to use some variable from the code in general text or replace `variable` construction with <code>variable</code>."
+    ]
+    system_messages = [{"role":"system", "content": prompt} for prompt in system_prompts]
+    
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages = system_messages +
+            [{"role": "user", "content": context}, ### объединить, если нет контекста
+            {"role": "user", "content": text}],
+        max_tokens=1024,
+        temperature=t,
+    )
+    print(response.choices[0].message.content.strip())
+    print('-'*10)
+    return response.choices[0].message.content.strip()
+
+
 async def chatgpt_reply(update: Update, context):
     global context_data
     # текст входящего сообщения
@@ -17,33 +45,22 @@ async def chatgpt_reply(update: Update, context):
     # перенаправление ответа в Telegram
     mes = await update.message.reply_text("Ваш запрос обрабатывается, подождите...")
     # запрос
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": f"У тебя есть следующий набор тем: Data Collection,  Feature Engineering, Model Research, Deploy model, others.\
-        Приходит запрос от пользователя: \"{text_with_context}\".К какой категории ты отнесешь этот запрос? Назови только категорию"}],
-        max_tokens=1024,
-        temperature=0.1,
-    )
+    #response = client.chat.completions.create(
+    #    model="gpt-3.5-turbo",
+    #    messages=[{"role": "user", "content": f"У тебя есть следующий набор тем: Data Collection,  Feature Engineering, Model Research, Deploy model, others.\
+    #    Приходит запрос от пользователя: \"{text_with_context}\".К какой категории ты отнесешь этот запрос? Назови только категорию"}],
+    #    max_tokens=1024,
+    #    temperature=0.1,
+    #)
     
-    theme = response.choices[0].message.content.strip()
-    prompts = {'data collection':'Don\'t forget to reference the internal datacatalog service.',\
-    'feature engineering':'Don\'t forget to tell what attributes there are (categorical, binary, numeric), what you can do with them, in what situations you can use them.',\
-    'model research':'Don\'t forget to talk about the following techniques: data visualization, validation, hyperparameter optimization, feature selection, ensemble collection.',\
-    'deploy model':'Don\'t forget to talk about the design as a service (streamlit),using docker, instructions',\
-    'others':'Add a sentence at the end saying that you\'re not sure the query was related to Data Science and if you\'re not satisfied with the answer, it might be worth rephrasing the question.'}
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": f"You are a Data Scientist. Think step by step before answering. You need to tell about \"{text_with_context}\" in terms of {theme},\
-         other topics are insufficient for this question. Please, provide an answer with sources and code, if possible,in Russian."+prompts[' '.join(re.findall(r'\b[A-Za-z]+',theme,re.DOTALL)).lower()]
-         +"When you provide code, you must use this format: <pre language=\"lang\">code</pre>, where code is the code itself and lang is a programming language name.\
-          Use the <code>variable</code> construction if you need to use some variable from the code in general text or replace `variable` construction with <code>variable</code>."}],#{lang}."}], - сделать перехват переменной из функции
-        max_tokens=1024,
-        temperature=0.1,
-    )
-    print(f"You are a Data Scientist. Think step by step before answering. You need to tell about \"{text_with_context}\" in terms of {theme},\
-         other topics are insufficient for this question. Please, provide an answer with sources and code, if possible,in Russian."+prompts[' '.join(re.findall(r'\b[A-Za-z]+',theme,re.DOTALL)).lower()]
-         +"When you provide code, you must use this format: <pre language=\"lang\">code</pre>, where code is the code itself and lang is a programming language name.\
-          Use the <code>variable</code> construction if you need to use some variable from the code in general text or replace `variable` construction with <code>variable</code>.")
+    #theme = response.choices[0].message.content.strip()
+    #prompts = {'data collection':'Don\'t forget to reference the internal datacatalog service.',\
+    #'feature engineering':'Don\'t forget to tell what attributes there are (categorical, binary, numeric), what you can do with them, in what situations you can use them.',\
+    #'model research':'Don\'t forget to talk about the following techniques: data visualization, validation, hyperparameter optimization, feature selection, ensemble collection.',\
+    #'deploy model':'Don\'t forget to talk about the design as a service (streamlit),using docker, instructions',\
+    #'others':'Add a sentence at the end saying that you\'re not sure the query was related to Data Science and if you\'re not satisfied with the answer, it might be worth rephrasing the question.'}
+    reply =  get_answer(text, context=text_with_context, t=0.3)
+    
     if len_context==0:
         context_data=[]
     elif len(context_data)>=len_context:
