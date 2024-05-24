@@ -41,25 +41,9 @@ async def chatgpt_reply(update: Update, context):
     # текст входящего сообщения
     text = update.message.text
     text_with_context = ' '.join(i for i in context_data if context_data) + text
-    #print(text_with_context)
-    #print('-------------')
     # перенаправление ответа в Telegram
     mes = await update.message.reply_text("Ваш запрос обрабатывается, пожалуйста, подождите...")
     # запрос
-    #response = client.chat.completions.create(
-    #    model="gpt-3.5-turbo",
-    #    messages=[{"role": "user", "content": f"У тебя есть следующий набор тем: Data Collection,  Feature Engineering, Model Research, Deploy model, others.\
-    #    Приходит запрос от пользователя: \"{text_with_context}\".К какой категории ты отнесешь этот запрос? Назови только категорию"}],
-    #    max_tokens=1024,
-    #    temperature=0.1,
-    #)
-    
-    #theme = response.choices[0].message.content.strip()
-    #prompts = {'data collection':'Don\'t forget to reference the internal datacatalog service.',\
-    #'feature engineering':'Don\'t forget to tell what attributes there are (categorical, binary, numeric), what you can do with them, in what situations you can use them.',\
-    #'model research':'Don\'t forget to talk about the following techniques: data visualization, validation, hyperparameter optimization, feature selection, ensemble collection.',\
-    #'deploy model':'Don\'t forget to talk about the design as a service (streamlit),using docker, instructions',\
-    #'others':'Add a sentence at the end saying that you\'re not sure the query was related to Data Science and if you\'re not satisfied with the answer, it might be worth rephrasing the question.'}
     reply =  get_answer(text, context=text_with_context, t=0.2)
     
     if len_context==0:
@@ -70,7 +54,6 @@ async def chatgpt_reply(update: Update, context):
     else:
         context_data.append(text+' - '+reply)
     # ответ
-    #reply = response.choices[0].message.content.strip()
 
     if "<pre" in reply or "<code>" in reply:
         keyboard = [[InlineKeyboardButton("Нажми меня", callback_data='press')]]
@@ -83,19 +66,12 @@ async def chatgpt_reply(update: Update, context):
             await mes.edit_text(reply.strip(),parse_mode="Markdown",reply_markup=reply_markup)    
         except:
             await mes.edit_text(reply.strip(),reply_markup=reply_markup)
-    #print("user:", text)
-    #print("assistant:", reply)
 
 async def code_button(update: Update, context):
     query = update.callback_query
     await query.answer()
     await query.edit_message_text(text="Здесь мог бы быть пример кода в контексте вопроса")
-    #await query.edit_message_reply_markup(reply_markup=None)
-    #print(f'The query is {query.data}')
-    #if query.data=='press':
-    #    await update.effective_chat.send_message("Вы нажали на кнопку!")
 
 async def other_reply(update: Update, context):
     video = InputMediaVideo(open('/root/bot/team02_bot/content/Huh Cat Meme Template.mp4', 'rb'), caption='Вы расстроили котика... Пришлите текст или голосовое, пожалуйста')
     await update.message.reply_media_group([video])
-    #await update.message.reply_text("Вы прислали не текст. Пожалуйста, пришлите текстовый запрос")

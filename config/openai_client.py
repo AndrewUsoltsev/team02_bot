@@ -10,7 +10,7 @@ def generate_response(text):
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": text}],
         max_tokens=1024,
-        temperature=0.5,
+        temperature=0.2,
     )
     print(response.choices[0].message.content.strip())
     return response.choices[0].message.content.strip()
