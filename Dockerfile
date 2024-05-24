@@ -10,6 +10,6 @@ COPY config/ ./config/
 COPY handlers/ ./handlers/
 COPY utils/ ./utils/
 COPY app.py .
-
+COPY content/ ./content/
 # команда запуска приложения
 CMD ["python", "app.py"]

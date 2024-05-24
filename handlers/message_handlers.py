@@ -73,5 +73,5 @@ async def code_button(update: Update, context):
     await query.edit_message_text(text="Здесь мог бы быть пример кода в контексте вопроса")
 
 async def other_reply(update: Update, context):
-    video = InputMediaVideo(open('/root/bot/team02_bot/content/Huh Cat Meme Template.mp4', 'rb'), caption='Вы расстроили котика... Пришлите текст или голосовое, пожалуйста')
+    video = InputMediaVideo(open('./content/Huh Cat Meme Template.mp4', 'rb'), caption='Вы расстроили котика... Пришлите текст или голосовое, пожалуйста')
     await update.message.reply_media_group([video])
