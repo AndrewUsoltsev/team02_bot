@@ -1,6 +1,6 @@
 from telegram.ext import MessageHandler, CommandHandler,CallbackQueryHandler,filters
 from config.telegram_bot import application 
-from handlers.message_handlers import chatgpt_reply,other_reply
+from handlers.message_handlers import chatgpt_reply,other_reply,code_button
 from handlers.command_handlers import start_reply,setlang_reply,language_choice,tech_reply
 
 # Регистрация обработчика текстовых сообщений
@@ -20,6 +20,7 @@ application.add_handler(tech_command_handler)
 setlang_command_handler = CommandHandler("setlang", setlang_reply)
 application.add_handler(setlang_command_handler)
 
+application.add_handler(CallbackQueryHandler(code_button,pattern='press'))
 application.add_handler(CallbackQueryHandler(language_choice))
 
 # Запуск бота

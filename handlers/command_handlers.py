@@ -31,6 +31,7 @@ async def setlang_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def language_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()# впилить глобальную переменную для влияния на промпты?
+    print(f'The query is {query.data} in lang func')
     if query.data=='English':
         await query.edit_message_text(text=f"The chosen language is: {query.data}")
     elif query.data=='Русский':
