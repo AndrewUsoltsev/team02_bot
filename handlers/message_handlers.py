@@ -4,7 +4,7 @@ from telegram import InputMediaVideo
 from config.openai_client import client
 import re
 
-context_data = []
+context_data = {}
 len_context = 3
 #может стоит обнулять контекст, если меняется тематика?
 
@@ -38,21 +38,22 @@ def get_answer(text, context="",t=0.5):
 
 async def chatgpt_reply(update: Update, context):
     global context_data
+    context_data.setdefault(update['message']['chat']['id'],[])
     # текст входящего сообщения
     text = update.message.text
-    text_with_context = ' '.join(i for i in context_data if context_data) + text
+    text_with_context = ' '.join(i for i in context_data[update['message']['chat']['id']] if context_data[update['message']['chat']['id']]) + text
     # перенаправление ответа в Telegram
     mes = await update.message.reply_text("Ваш запрос обрабатывается, пожалуйста, подождите...")
     # запрос
-    reply =  get_answer(text, context=text_with_context, t=0.2)
+    reply =  get_answer(text, context=text_with_context, t=0.1)
     
     if len_context==0:
-        context_data=[]
-    elif len(context_data)>=len_context:
-        context_data.pop(0)
-        context_data.append(text+' - '+reply)
+        context_data[update['message']['chat']['id']]=[]
+    elif len(context_data[update['message']['chat']['id']])>=len_context:
+        context_data[update['message']['chat']['id']].pop(0)
+        context_data[update['message']['chat']['id']].append(text+' - '+reply)
     else:
-        context_data.append(text+' - '+reply)
+        context_data[update['message']['chat']['id']].append(text+' - '+reply)
     # ответ
 
     if "<pre" in reply or "<code>" in reply:
